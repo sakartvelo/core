@@ -43,5 +43,3 @@ blockchain-api/*
 
 # test artifacts
 metrics/config_test.json
-
-blockchain/build/*
