@@ -1,8 +1,8 @@
 pragma solidity ^0.4.4;
 
 
-import "./zeppelin/token/StandardToken.sol";
-import "./zeppelin/ownership/Ownable.sol";
+import "../contracts_zeppelin/token/StandardToken.sol";
+import "../contracts_zeppelin/ownership/Ownable.sol";
 
 
 /*
@@ -16,7 +16,7 @@ import "./zeppelin/ownership/Ownable.sol";
  *
  *  simple standard
  */
-contract SDT is StandardToken, Ownable {
+contract SonmDummyToken is StandardToken, Ownable {
 
     string public name = "Sonm Dummy Token";
 
@@ -26,16 +26,9 @@ contract SDT is StandardToken, Ownable {
 
     uint public INITIAL_SUPPLY = 1000000 * 1 ether;
 
-    function SDT() {
+    function SonmDummyToken() {
         totalSupply = INITIAL_SUPPLY;
         balances[msg.sender] = INITIAL_SUPPLY;
-    }
-
-    function mintToken(address target, uint256 mintedAmount) onlyOwner {
-        balances[target] += mintedAmount;
-        totalSupply += mintedAmount;
-        Transfer(0, owner, mintedAmount);
-        Transfer(owner, target, mintedAmount);
     }
 
 }
