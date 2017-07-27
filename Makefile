@@ -57,3 +57,6 @@ clean:
 	rm coverage.html || true
 	rm funccoverage.txt || true
 	rm ${MINER} ${HUB} ${CLI}
+
+testrpc:
+	./blockchain/cmd/testrpc.sh
