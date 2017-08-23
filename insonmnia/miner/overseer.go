@@ -110,6 +110,7 @@ type Overseer interface {
 	// Fetch logs of the container
 	Logs(ctx context.Context, id string, opts types.ContainerLogsOptions) (io.ReadCloser, error)
 
+	Adopt(ctx context.Context) ([]chan pb.TaskStatusReply_Status, []ContainerInfo, error)
 	// Close terminates all associated asynchronous operations and prepares the Overseer for shutting down.
 	Close() error
 }
@@ -431,4 +432,34 @@ func (o *overseer) Stop(ctx context.Context, containerid string) error {
 
 func (o *overseer) Logs(ctx context.Context, id string, opts types.ContainerLogsOptions) (io.ReadCloser, error) {
 	return o.client.ContainerLogs(ctx, id, opts)
+}
+
+func (o *overseer) Adopt(ctx context.Context) ([]chan pb.TaskStatusReply_Status, []ContainerInfo, error) {
+	filterArgs := filters.NewArgs()
+	filterArgs.Add("label", overseerTag)
+	options := types.ContainerListOptions{Filters: filterArgs}
+	containers, err := o.client.ContainerList(o.ctx, options)
+	if err != nil {
+		return nil, nil, err
+	}
+	statuses := make([]chan pb.TaskStatusReply_Status, len(containers))
+	infos := make([]ContainerInfo, len(containers))
+	for idx, c := range containers {
+		json, err := o.client.ContainerInspect(o.ctx, c.ID)
+		if err != nil {
+			log.G(o.ctx).Warn("failed to inspect container", zap.String("id", c.ID))
+			continue
+		}
+
+		info := ContainerInfo{
+			status:    &pb.TaskStatusReply{Status: pb.TaskStatusReply_RUNNING},
+			ID:        c.ID,
+			Ports:     json.NetworkSettings.Ports,
+			Resources: resource.Resources{int(json.HostConfig.NanoCPUs), json.HostConfig.Memory},
+			//PublicKey: c.Labels[]
+		}
+		infos[idx] = info
+		statuses[idx] = make(chan pb.TaskStatusReply_Status)
+	}
+	return statuses, infos, nil
 }

@@ -277,6 +277,7 @@ func (m *Miner) Start(ctx context.Context, request *pb.MinerStartRequest) (*pb.M
 		m.resources.Retain(&usage)
 		return nil, status.Errorf(codes.Internal, "failed to Spawn %v", err)
 	}
+	m.setStatus(&pb.TaskStatusReply{Status: pb.TaskStatusReply_RUNNING}, request.Id)
 	containerInfo.PublicKey = publicKey
 
 	m.saveContainerInfo(request.Id, containerInfo)
